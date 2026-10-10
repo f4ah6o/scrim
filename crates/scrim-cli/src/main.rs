@@ -1,8 +1,12 @@
 //! CLI tool for inspecting accessibility trees and permissions.
 
 use clap::{Parser, Subcommand};
+use tracing::error;
+
+#[cfg(target_os = "macos")]
 use scrim_core::ElementFilter;
-use tracing::{error, info};
+#[cfg(target_os = "macos")]
+use tracing::info;
 
 #[derive(Parser)]
 #[command(name = "scrim")]
@@ -39,9 +43,7 @@ async fn main() -> anyhow::Result<()> {
             check_permissions();
             Ok(())
         }
-        Commands::Dump { format, all } => {
-            dump_ui_tree(&format, all).await
-        }
+        Commands::Dump { format, all } => dump_ui_tree(&format, all).await,
     }
 }
 
@@ -83,6 +85,7 @@ fn check_permissions() {
     }
 }
 
+#[allow(unused_variables)]
 async fn dump_ui_tree(format: &str, all: bool) -> anyhow::Result<()> {
     #[cfg(target_os = "macos")]
     {
@@ -139,6 +142,7 @@ async fn dump_ui_tree(format: &str, all: bool) -> anyhow::Result<()> {
     }
 }
 
+#[cfg(target_os = "macos")]
 fn print_element(index: usize, element: &scrim_core::UIElement, depth: usize) {
     let indent = "  ".repeat(depth);
     let label = element.label.as_deref().unwrap_or("");
@@ -150,7 +154,11 @@ fn print_element(index: usize, element: &scrim_core::UIElement, depth: usize) {
         index,
         element.role,
         label,
-        if actions.is_empty() { "no actions" } else { &actions },
+        if actions.is_empty() {
+            "no actions"
+        } else {
+            &actions
+        },
         element.rect.x,
         element.rect.y,
         element.rect.width,

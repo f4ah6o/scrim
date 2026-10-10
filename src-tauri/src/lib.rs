@@ -1,10 +1,10 @@
 //! Scrim - Keyboard-driven desktop navigation overlay
 
-use tauri::{Manager, Emitter};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
+use tauri::{Emitter, Manager};
 
 static OVERLAY_ACTIVE: AtomicBool = AtomicBool::new(false);
 
@@ -45,9 +45,11 @@ fn setup_overlay_window(_app: &tauri::App) -> Result<(), Box<dyn std::error::Err
     {
         use cocoa::appkit::{NSWindow, NSWindowStyleMask};
         use cocoa::base::id;
-        use objc::{msg_send, sel, sel_impl, class};
+        use objc::{class, msg_send, sel, sel_impl};
 
-        let window = _app.get_webview_window("overlay").ok_or("Overlay window not found")?;
+        let window = _app
+            .get_webview_window("overlay")
+            .ok_or("Overlay window not found")?;
 
         // Get the native NSWindow using the Tauri API
         #[cfg(target_os = "macos")]
@@ -73,8 +75,8 @@ fn setup_global_shortcuts(_handle: tauri::AppHandle) -> Result<(), Box<dyn std::
 
     #[cfg(target_os = "macos")]
     {
-        use rdev::{Event, EventType, Key, listen};
-        use flume::{Sender, Receiver, unbounded};
+        use flume::{unbounded, Receiver, Sender};
+        use rdev::{listen, Event, EventType, Key};
 
         // Create a channel for keyboard events
         let (tx, rx): (Sender<String>, Receiver<String>) = unbounded();
@@ -87,16 +89,36 @@ fn setup_global_shortcuts(_handle: tauri::AppHandle) -> Result<(), Box<dyn std::
                     // Only process if overlay is active
                     if OVERLAY_ACTIVE.load(Ordering::Relaxed) {
                         match key {
-                            Key::KeyA => { let _ = tx.send("A".to_string()); }
-                            Key::KeyS => { let _ = tx.send("S".to_string()); }
-                            Key::KeyD => { let _ = tx.send("D".to_string()); }
-                            Key::KeyF => { let _ = tx.send("F".to_string()); }
-                            Key::KeyG => { let _ = tx.send("G".to_string()); }
-                            Key::KeyH => { let _ = tx.send("H".to_string()); }
-                            Key::KeyJ => { let _ = tx.send("J".to_string()); }
-                            Key::KeyK => { let _ = tx.send("K".to_string()); }
-                            Key::KeyL => { let _ = tx.send("L".to_string()); }
-                            Key::Escape => { let _ = tx.send("Escape".to_string()); }
+                            Key::KeyA => {
+                                let _ = tx.send("A".to_string());
+                            }
+                            Key::KeyS => {
+                                let _ = tx.send("S".to_string());
+                            }
+                            Key::KeyD => {
+                                let _ = tx.send("D".to_string());
+                            }
+                            Key::KeyF => {
+                                let _ = tx.send("F".to_string());
+                            }
+                            Key::KeyG => {
+                                let _ = tx.send("G".to_string());
+                            }
+                            Key::KeyH => {
+                                let _ = tx.send("H".to_string());
+                            }
+                            Key::KeyJ => {
+                                let _ = tx.send("J".to_string());
+                            }
+                            Key::KeyK => {
+                                let _ = tx.send("K".to_string());
+                            }
+                            Key::KeyL => {
+                                let _ = tx.send("L".to_string());
+                            }
+                            Key::Escape => {
+                                let _ = tx.send("Escape".to_string());
+                            }
                             _ => {}
                         }
                     }
@@ -164,7 +186,10 @@ mod commands {
                 _ => ElementFilter::default(),
             };
 
-            log::info!("Getting interactive elements with filter: {:?}", args.filter);
+            log::info!(
+                "Getting interactive elements with filter: {:?}",
+                args.filter
+            );
 
             let result = client.get_interactive_elements(filter).await;
 

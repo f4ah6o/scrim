@@ -32,6 +32,7 @@ impl Hint {
 /// - First elements: "A", "S", "D", "F"...
 /// - Then: "AA", "AS", "AD", "AF"...
 /// - Then: "SA", "SS", "SD", "SF"...
+#[allow(dead_code)] // public hint API; constructed by platform/app crates outside scrim-core tests
 pub struct HintGenerator {
     /// Characters to use for hint labels
     chars: Vec<char>,
@@ -39,6 +40,7 @@ pub struct HintGenerator {
     hints: HashMap<usize, String>,
 }
 
+#[allow(dead_code)] // public hint API; used by platform/app crates outside scrim-core tests
 impl HintGenerator {
     /// Create a new hint generator with the default home row key set.
     ///
