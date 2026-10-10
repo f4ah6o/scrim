@@ -5,17 +5,17 @@ use scrim_core::{AccessibilityClient, AccessibilityError, ElementFilter, Rect, R
 
 use accessibility::{AXAttribute, AXUIElement};
 use accessibility_sys::{
-    kAXFocusedApplicationAttribute, kAXFocusedUIElementAttribute, kAXRoleAttribute,
-    kAXTitleAttribute, kAXPositionAttribute, kAXSizeAttribute,
-    AXValueRef, AXValueGetValue, kAXValueTypeCGPoint, kAXValueTypeCGSize,
+    kAXFocusedApplicationAttribute, kAXFocusedUIElementAttribute, kAXPositionAttribute,
+    kAXRoleAttribute, kAXSizeAttribute, kAXTitleAttribute, kAXValueTypeCGPoint, kAXValueTypeCGSize,
+    AXValueGetValue, AXValueRef,
 };
 use core_foundation::{
     array::CFArray,
     base::{CFType, TCFType},
     string::CFString,
 };
-use core_graphics::geometry::{CGPoint, CGSize};
 use core_graphics::display::CGDisplay;
+use core_graphics::geometry::{CGPoint, CGSize};
 use std::mem::MaybeUninit;
 use tracing::warn;
 
@@ -102,9 +102,7 @@ impl MacOSAccessibilityClient {
                 AccessibilityError::Platform(format!("Failed to get focused app: {:?}", e))
             })?;
 
-        let app_element = AXUIElement::wrap_under_get_rule(
-            app_cf.as_CFTypeRef() as *mut _
-        );
+        let app_element = AXUIElement::wrap_under_get_rule(app_cf.as_CFTypeRef() as *mut _);
 
         // Get the focused window from the focused application
         let window_cf: CFType = app_element
@@ -115,9 +113,7 @@ impl MacOSAccessibilityClient {
                 AccessibilityError::Platform(format!("Failed to get focused window: {:?}", e))
             })?;
 
-        let window_element = AXUIElement::wrap_under_get_rule(
-            window_cf.as_CFTypeRef() as *mut _
-        );
+        let window_element = AXUIElement::wrap_under_get_rule(window_cf.as_CFTypeRef() as *mut _);
 
         // Convert to UIElement
         self.ax_element_to_ui_element(&window_element)
@@ -152,7 +148,7 @@ impl MacOSAccessibilityClient {
                                 if let Some(window_ref) = windows_array.iter().next() {
                                     if let Some(window_ptr) = window_ref.as_ref() {
                                         let window_element = AXUIElement::wrap_under_get_rule(
-                                            (window_ptr as *const _) as *mut _
+                                            (window_ptr as *const _) as *mut _,
                                         );
                                         return self.ax_element_to_ui_element(&window_element);
                                     }
@@ -192,7 +188,9 @@ impl MacOSAccessibilityClient {
     unsafe fn ax_element_to_ui_element(&self, element: &AXUIElement) -> Result<UIElement> {
         // Get role
         let role_cf: CFType = element
-            .attribute(&AXAttribute::new(&CFString::from_static_string(kAXRoleAttribute)))
+            .attribute(&AXAttribute::new(&CFString::from_static_string(
+                kAXRoleAttribute,
+            )))
             .map_err(|e| AccessibilityError::Platform(format!("Failed to get role: {:?}", e)))?;
 
         let role = role_cf
@@ -202,7 +200,9 @@ impl MacOSAccessibilityClient {
 
         // Get title/label
         let label = element
-            .attribute(&AXAttribute::new(&CFString::from_static_string(kAXTitleAttribute)))
+            .attribute(&AXAttribute::new(&CFString::from_static_string(
+                kAXTitleAttribute,
+            )))
             .ok()
             .and_then(|v: CFType| {
                 if let Some(s) = v.downcast::<CFString>() {
@@ -222,10 +222,9 @@ impl MacOSAccessibilityClient {
         };
 
         // Get actual actions
-        let actions = element.action_names()
-            .map(|arr| arr.iter()
-                .map(|s| s.to_string())
-                .collect())
+        let actions = element
+            .action_names()
+            .map(|arr| arr.iter().map(|s| s.to_string()).collect())
             .unwrap_or_default();
 
         let id = format!("{:p}", element);
@@ -237,7 +236,8 @@ impl MacOSAccessibilityClient {
             if let Some(children_array) = children_cf.downcast::<CFArray>() {
                 for child_ref in children_array.iter() {
                     if let Some(ptr) = child_ref.as_ref() {
-                        let child_ax = AXUIElement::wrap_under_get_rule((ptr as *const _) as *mut _);
+                        let child_ax =
+                            AXUIElement::wrap_under_get_rule((ptr as *const _) as *mut _);
                         if let Ok(child) = self.ax_element_to_ui_element(&child_ax) {
                             ui_element.add_child(child);
                         }

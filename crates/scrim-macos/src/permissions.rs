@@ -3,8 +3,8 @@
 //! Uses the Accessibility API to check and request accessibility permissions.
 
 use accessibility_sys::AXIsProcessTrusted;
-use core_foundation::boolean::CFBoolean;
 use core_foundation::base::TCFType;
+use core_foundation::boolean::CFBoolean;
 use core_foundation::dictionary::CFDictionary;
 
 /// Check if the current process has accessibility permissions.
@@ -31,7 +31,8 @@ pub fn request_trust() -> bool {
         // Create options dictionary with kAXTrustedCheckOptionPrompt = true
         let prompt_key = CFString::from_static_string("AXTrustedCheckOptionPrompt");
         let prompt_value = CFBoolean::true_value();
-        let options = CFDictionary::from_CFType_pairs(&[(prompt_key.as_CFType(), prompt_value.as_CFType())]);
+        let options =
+            CFDictionary::from_CFType_pairs(&[(prompt_key.as_CFType(), prompt_value.as_CFType())]);
 
         // Request trust (opens system prompt)
         AXIsProcessTrustedWithOptions(options.as_concrete_TypeRef());

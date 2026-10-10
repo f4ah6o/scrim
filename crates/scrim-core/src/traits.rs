@@ -18,10 +18,7 @@ pub enum AccessibilityError {
     ElementNotFound(String),
 
     #[error("Action failed: {action} on {element_id}")]
-    ActionFailed {
-        element_id: String,
-        action: String,
-    },
+    ActionFailed { element_id: String, action: String },
 
     #[error("Platform error: {0}")]
     Platform(String),
